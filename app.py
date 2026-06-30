@@ -1,5 +1,5 @@
 import streamlit as st
-import ollama
+from groq import Groq
 
 
 st.set_page_config(
@@ -43,7 +43,7 @@ code = st.text_area(
 
 if st.button("Analyze Code"):
 
-    if code == "":
+    if code.strip() == "":
         st.warning("Please enter code")
 
     else:
@@ -88,21 +88,29 @@ Code:
 
         try:
 
-            result = ollama.chat(
-                model="llama3",
+            client = Groq(
+                api_key=st.secrets["GROQ_API_KEY"]
+            )
+
+
+            response = client.chat.completions.create(
+
+                model="llama-3.1-8b-instant",
+
                 messages=[
                     {
                         "role": "user",
                         "content": prompt
                     }
                 ]
+
             )
 
 
-            answer = result["message"]["content"]
+            answer = response.choices[0].message.content
 
 
-            st.subheader("AI Analysis")
+            st.subheader("🤖 AI Analysis")
 
             st.write(answer)
 
@@ -110,7 +118,7 @@ Code:
         except Exception as e:
 
             st.error(
-                "Ollama connection error. Make sure Ollama is running."
+                "API connection error. Check your GROQ API key."
             )
 
             st.write(e)

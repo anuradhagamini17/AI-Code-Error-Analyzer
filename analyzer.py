@@ -1,71 +1,51 @@
-import ollama
+from groq import Groq
+import os
+
+
+client = Groq(
+    api_key=os.environ["GROQ_API_KEY"]
+)
 
 
 def analyze_code(code, language, error):
 
     prompt = f"""
+You are an expert code debugger.
 
-You are an expert software debugger.
-
-Analyze and FIX the given code.
-
-Programming Language:
+Language:
 {language}
 
-
-CODE:
-----------------
+Code:
 {code}
-----------------
 
-
-ERROR MESSAGE:
-----------------
+Error:
 {error}
-----------------
 
-
-Your response MUST follow this exact format:
-
+Return exactly:
 
 ## Error Found
-Mention the exact line number and error.
-
+Give exact line number.
 
 ## Reason
-Explain why this error happened.
-
+Explain the mistake.
 
 ## Corrected Code
-IMPORTANT:
-Provide the FULL corrected code.
-Do not give only snippets.
-Do not use placeholders.
-The code must be ready to run.
-
+Give the full corrected code.
 
 ## Explanation
-Explain what changes you made.
+Explain the fix.
 
-
-Rules:
-- Always return corrected code.
-- Keep the original logic.
-- Only fix the mistakes.
-- Make sure corrected code has proper syntax.
+Always provide complete corrected code.
 """
 
-    response = ollama.chat(
-        model="qwen2.5-coder",
+    response = client.chat.completions.create(
+        model="llama-3.1-8b-instant",
         messages=[
             {
                 "role": "user",
                 "content": prompt
             }
-        ],
-        options={
-            "temperature":0.1
-        }
+        ]
     )
 
-    return response["message"]["content"]
+    return response.choices[0].message.content
